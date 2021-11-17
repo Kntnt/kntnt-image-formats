@@ -5,7 +5,7 @@
  * Plugin Name:       Kntnt Image Formats
  * Plugin URI:        https://www.kntnt.com/
  * Description:       Provides a set of image formats including 'thumbnail', 'medium', 'medium_large', and 'large'.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Author:            Thomas Barregren
  * Author URI:        https://www.kntnt.com/
  * License:           GPL-3.0+
