@@ -22,50 +22,50 @@ class Plugin {
 
     private static function default_image_formats() {
         return [
-            'extra_small' => [
-                'name' => __( 'Extra small', 'kntnt-image-formats' ),
-                'width' => 180,
-                'height' => 9999,
-                'crop' => false,
-            ],
             'thumbnail' => [
-                'name' => __( 'Extra small (crop)', 'kntnt-image-formats' ),
-                'width' => 180,
-                'height' => 180,
+                'name' => __( 'Thumbnail', 'kntnt-image-formats' ),
+                'width' => 150,
+                'height' => 150,
                 'crop' => true,
             ],
-            'small' => [
-                'name' => __( 'Small', 'kntnt-image-formats' ),
-                'width' => 300,
-                'height' => 9999,
-                'crop' => false,
-            ],
-            'small_crop' => [
-                'name' => __( 'Small (crop)', 'kntnt-image-formats' ),
-                'width' => 300,
-                'height' => 200,
-                'crop' => true,
+            'xx_small' => [
+	            'name' => __( 'XX-Small', 'kntnt-image-formats' ),
+	            'width' => 225,
+	            'height' => 9999,
+	            'crop' => false,
             ],
             'medium' => [
+                'name' => __( 'X-Small', 'kntnt-image-formats' ),
+                'width' => 300,
+                'height' => 9999,
+                'crop' => false,
+            ],
+            'medium_small' => [
+                'name' => __( 'Small', 'kntnt-image-formats' ),
+                'width' => 450,
+                'height' => 200,
+                'crop' => false,
+            ],
+            'medium_medium' => [
                 'name' => __( 'Medium', 'kntnt-image-formats' ),
                 'width' => 600,
                 'height' => 9999,
                 'crop' => false,
             ],
             'medium_large' => [
-                'name' => __( 'Medium (crop)', 'kntnt-image-formats' ),
-                'width' => 600,
-                'height' => 400,
-                'crop' => true,
-            ],
-            'large' => [
                 'name' => __( 'Large', 'kntnt-image-formats' ),
-                'width' => 1060,
+                'width' => 900,
                 'height' => 9999,
                 'crop' => false,
             ],
-            'extra_large' => [
-                'name' => __( 'Extra large', 'kntnt-image-formats' ),
+            'large' => [
+                'name' => __( 'X-Large', 'kntnt-image-formats' ),
+                'width' => 1200,
+                'height' => 9999,
+                'crop' => false,
+            ],
+            'xx_large' => [
+                'name' => __( 'XX-Large', 'kntnt-image-formats' ),
                 'width' => 1920,
                 'height' => 9999,
                 'crop' => false,
