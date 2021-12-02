@@ -5,7 +5,7 @@
  * Plugin Name:       Kntnt Image Formats
  * Plugin URI:        https://www.kntnt.com/
  * Description:       Provides a set of image formats including 'thumbnail', 'medium', 'medium_large', and 'large'.
- * Version:           1.1.1
+ * Version:           1.1.2
  * Author:            Thomas Barregren
  * Author URI:        https://www.kntnt.com/
  * License:           GPL-3.0+
@@ -18,9 +18,9 @@ defined( 'ABSPATH' ) && new Plugin;
 
 class Plugin {
 
-	private static $built_in_sizes = [ 'thumbnail', 'medium', 'medium_large', 'large' ];
+	private static array $built_in_sizes = [ 'thumbnail', 'medium', 'medium_large', 'large' ];
 
-	private static function default_image_formats() {
+	private static function default_image_formats(): array {
 		return [
 			'thumbnail'     => [
 				'name'   => __( 'Thumbnail', 'kntnt-image-formats' ),
@@ -91,31 +91,27 @@ class Plugin {
 		];
 	}
 
-	private $names = [];
+	private array $names = [];
 
 	public function __construct() {
 		add_action( 'plugins_loaded', [ $this, 'run' ] );
 	}
 
 	public function run() {
-
 		$this->setup_image_formats();
-
 		add_filter( 'image_size_names_choose', [ $this, 'update_ui' ], 9999 );
 		add_filter( 'image_resize_dimensions', [ $this, 'crop_with_bleed' ], 10, 6 );
-
 		add_filter( 'all_admin_notices', [ $this, 'media_options' ], 10, 1 );
-		add_action( 'in_admin_footer', 'ob_end_flush', 10, 0 );
-
 	}
 
 	public function media_options() {
-		ob_start( function ( $content ) {
-			// TODO: Output a table with the image sizes read only.
-			$start = '<h2 class="title">' . __( 'Image sizes' ) . '</h2>';
-			$stop  = '<h2 class="title">';
-			return preg_replace( "`$start.*(?=$stop)`s", '', $content, 1 );
-		} );
+		$screen = get_current_screen();
+		if ( isset( $screen ) && 'options-media' == $screen->base ) {
+			ob_start( function ( $content ) {
+				return preg_replace( '~(?:<tr>.*?<th[^>]+>(?:Thumbnail|Medium|Large) size</th>.*?</tr>)~s', '', $content );
+			} );
+			add_action( 'in_admin_footer', 'ob_end_flush', 10, 0 );
+		}
 	}
 
 	public function setup_image_formats() {
@@ -125,7 +121,7 @@ class Plugin {
 		}
 	}
 
-	public function update_ui( $sizes ) {
+	public function update_ui( $sizes ): array {
 
 		// Remove all previously defined images sizes that is overridden by ImageSizeBuilder.
 		$sizes = array_diff_key( $sizes, $this->names );
@@ -138,7 +134,8 @@ class Plugin {
 
 	}
 
-	public function crop_with_bleed( $payload, $src_w, $src_h, $dst_w, $dst_h, $crop ) {
+	/** @noinspection PhpUnusedParameterInspection */
+	public function crop_with_bleed( $payload, $src_w, $src_h, $dst_w, $dst_h, $crop ): ?array {
 
 		if ( ! $crop ) {
 			return null;
