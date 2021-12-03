@@ -108,7 +108,11 @@ class Plugin {
 		$screen = get_current_screen();
 		if ( isset( $screen ) && 'options-media' == $screen->base ) {
 			ob_start( function ( $content ) {
-				return preg_replace( '~(?:<tr>.*?<th[^>]+>(?:Thumbnail|Medium|Large) size</th>.*?</tr>)~s', '', $content );
+				$thumbnail_size = __( 'Thumbnail size' );
+				$medium_size    = __( 'Medium size' );
+				$large_size     = __( 'Large size' );
+				$re             = "~<tr>.*?<th[^>]+>(?:$thumbnail_size|$medium_size|$large_size)</th>.*?</tr>~s";
+				return preg_replace( $re, '', $content );
 			} );
 			add_action( 'in_admin_footer', 'ob_end_flush', 10, 0 );
 		}
