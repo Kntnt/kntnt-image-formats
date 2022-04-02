@@ -5,7 +5,7 @@
  * Plugin Name:       Kntnt Image Formats
  * Plugin URI:        https://www.kntnt.com/
  * Description:       Provides a set of image formats including 'thumbnail', 'medium', 'medium_large', and 'large'.
- * Version:           1.1.3
+ * Version:           1.1.4
  * Author:            Thomas Barregren
  * Author URI:        https://www.kntnt.com/
  * License:           GPL-3.0+
@@ -98,48 +98,34 @@ class Plugin {
 	}
 
 	public function run() {
-		$this->setup_image_formats();
-		add_filter( 'image_size_names_choose', [ $this, 'update_ui' ], 9999 );
-		add_filter( 'image_resize_dimensions', [ $this, 'crop_with_bleed' ], 10, 6 );
-		add_filter( 'all_admin_notices', [ $this, 'media_options' ], 10, 1 );
-	}
 
-	public function media_options() {
-		$screen = get_current_screen();
-		if ( isset( $screen ) && 'options-media' == $screen->base ) {
-			ob_start( function ( $content ) {
-				$thumbnail_size = __( 'Thumbnail size' );
-				$medium_size    = __( 'Medium size' );
-				$large_size     = __( 'Large size' );
-				$re             = "~<tr>.*?<th[^>]+>(?:$thumbnail_size|$medium_size|$large_size)</th>.*?</tr>~s";
-				return preg_replace( $re, '', $content );
-			} );
-			add_action( 'in_admin_footer', 'ob_end_flush', 10, 0 );
-		}
+		// Add image formats
+		$this->setup_image_formats();
+
+		// Replace WordPress image_resize_dimensions(), which calculated resize
+		// dimensions for use in WP_Image_Editor, with our own implementation
+		// that crops with bleed. That is, it behaves like the CSS property
+		// `object-fit: cover`, while WordPress behaves like the CSS property
+		// `object-fit: contain`.
+		add_filter( 'image_resize_dimensions', [ $this, 'image_resize_dimensions' ], 10, 6 );
+
+		// Modify the list of image sizes that are available to administrators in Media Library
+		add_filter( 'image_size_names_choose', [ $this, 'update_ui' ], 9999 );
+
+		// Modify the media setting page
+		add_filter( 'all_admin_notices', [ $this, 'media_options' ], 10, 1 );
+
 	}
 
 	public function setup_image_formats() {
-		$default_image_formats = apply_filters( 'kntnt-image-formats', self::default_image_formats() );
-		foreach ( $default_image_formats as $slug => $format ) {
+		$image_formats = apply_filters( 'kntnt-image-formats', self::default_image_formats() );
+		foreach ( $image_formats as $slug => $format ) {
 			$this->set_image_size( $slug, $format['width'], $format['height'], $format['crop'], $format['name'] );
 		}
 	}
 
-	public function update_ui( $sizes ): array {
-
-		// Remove all previously defined images sizes that is overridden by ImageSizeBuilder.
-		$sizes = array_diff_key( $sizes, $this->names );
-
-		// Remove all images sizes with an empty name.
-		$names = array_filter( $this->names );
-
-		// Return all image sizes defined by this class and the leftovers.
-		return array_merge( $names, $sizes );
-
-	}
-
 	/** @noinspection PhpUnusedParameterInspection */
-	public function crop_with_bleed( $payload, $src_w, $src_h, $dst_w, $dst_h, $crop ): ?array {
+	public function image_resize_dimensions( $payload, $src_w, $src_h, $dst_w, $dst_h, $crop ): ?array {
 
 		if ( ! $crop ) {
 			return null;
@@ -155,6 +141,31 @@ class Plugin {
 
 		return [ 0, 0, (int) $src_x, (int) $src_y, (int) $dst_w, (int) $dst_h, (int) $crop_w, (int) $crop_h ];
 
+	}
+
+	public function update_ui( $sizes ): array {
+
+		// Remove all previously defined images sizes that is overridden by ImageSizeBuilder.
+		$sizes = array_diff_key( $sizes, $this->names );
+
+		// Remove all images sizes with an empty name.
+		$names = array_filter( $this->names );
+
+		// Return all image sizes defined by this class and the leftovers.
+		return array_merge( $names, $sizes );
+
+	}
+
+	public function media_options() {
+		$screen = get_current_screen();
+		if ( isset( $screen ) && 'options-media' == $screen->base ) {
+			ob_start( function ( $content ) {
+				$image_sizes = __( 'Image sizes' );
+				$re          = "/<h2[^>]+>$image_sizes.*?(?=<h2)/s";
+				return preg_replace( $re, '', $content, 1 );
+			} );
+			add_action( 'in_admin_footer', 'ob_end_flush', 10, 0 );
+		}
 	}
 
 	private function set_image_size( $slug, $width, $height, $crop, $name ) {
